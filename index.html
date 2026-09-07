@@ -144,7 +144,7 @@ $('h-save').onclick=async()=>{const p={action:'harvest',zone:hsel.zone,light:hse
 // Today
 function renderToday(){if(!S)return;$('t-date').textContent=S.date;$('t-cards').innerHTML=ZONES.map(z=>{const e=S.today.filter(x=>x.zone===z);const am=e.filter(x=>x.checkpoint==='9:25 AM').pop();
   return card('<div class="big">'+z+' <small style="font-weight:400;color:#666">day '+(S.flowerDays[z]==null?'?':S.flowerDays[z])+'</small></div>'+(am?'<div class="line">'+String(am.output).split('\n').slice(0,3).join('<br>')+'</div>':'<div class="line" style="color:#666">No 9:25 weight yet</div>')+
-    '<div class="rule">'+(e.length?e.map(x=>x.timestamp+' '+x.bag+' '+x.checkpoint+' '+x.weight_g+' g ('+x.deficit_g+' g under)').join('<br>'):'nothing logged today')+'</div>','ok')}).join('')}
+    '<div class="rule">'+(e.length?e.map(x=>x.timestamp+' '+x.bag+' '+x.checkpoint+' '+x.weight_g+' g, deficit '+x.deficit_g+' g').join('<br>'):'nothing logged today')+'</div>','ok')}).join('')}
 $('t-refresh').onclick=load;
 // Nav + name
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');['log','dev','har','today','me'].forEach(v=>$('v-'+v).classList.toggle('hide',v!==b.dataset.v));if(b.dataset.v==='dev')renderDev();if(b.dataset.v==='har')renderHar();if(b.dataset.v==='today')load();window.scrollTo(0,0)});
