@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>How to use the Crop Steering Logger</title>
+<style>body{font:15px/1.4 -apple-system,system-ui,sans-serif;max-width:720px;margin:0 auto;padding:20px;color:#111}h1{font-size:22px;margin:0 0 4px}h2{font-size:16px;margin:18px 0 6px;color:#1b5e20}ol,ul{padding-left:20px;margin:4px 0}li{margin:3px 0}table{border-collapse:collapse;width:100%;font-size:14px}td,th{border:1px solid #ccc;padding:5px 7px;text-align:left}code{background:#eee;padding:1px 4px;border-radius:3px}@media print{body{padding:0;font-size:12.5px}h2{margin:10px 0 3px}}</style></head><body>
+<h1>Crop Steering Logger, how to use it</h1>
+<p>You walk the flower room with a scale and a phone. The app tells you what to run and writes every number to the Sheet. Zones are Z1 to Z6. Each zone has 4 lights, L1 to L4. The sentinel bag under each light is named Z3-L2 style.</p>
+<h2>First time on a phone</h2>
+<ol><li>Open the app link in Chrome (Android) or Safari (iPhone).</li><li>Add it to the home screen: Chrome menu, <b>Add to Home screen</b>. Safari: share button, <b>Add to Home Screen</b>.</li><li>Tap <b>Me</b> at the bottom, type your name, tap <b>Save name</b>. Do this each time you open the app.</li></ol>
+<h2>Every checkpoint, every bag</h2>
+<ol><li>Tap <b>Log</b>. Tap the <b>zone</b>.</li><li>Tap the <b>bag</b> (the light it sits under). The strain shows under the button.</li><li>Tap the <b>checkpoint</b>: 9:25 AM, 11:15 AM, 4:15 PM, or Lights-off.</li><li>Put the whole bag on the scale. Type the weight in <b>grams</b>. At 11:15 also type leachate mL, and EC and pH if you measured them.</li><li>Tap <b>Save and get decision</b>. Wait for the card. Green is on plan. Orange means do what the card says.</li><li>Tap <b>Next bag</b> and repeat. Tap <b>New zone</b> when the zone is done.</li></ol>
+<p>A red card means it did <b>not</b> save. Your numbers stay in the boxes. Get signal and tap Save again. Never move on from a red card.</p>
+<h2>What the card tells you</h2>
+<table><tr><th>Checkpoint</th><th>What you get</th></tr>
+<tr><td>9:25 AM</td><td>P1 shot count for this bag and for the zone (mean of the zone's bags logged so far). The TrolMaster line is what you program: start, run time, interval, events, last start. Log all 4 bags, then use the zone line from the last card.</td></tr>
+<tr><td>11:15 AM</td><td>This weight becomes the bag's new field capacity, if it is sane. Tomorrow's math uses it. Leachate warnings show here.</td></tr>
+<tr><td>4:15 PM</td><td>P2 YES or NO. YES means add a P2 shot at 3:30 PM tomorrow.</td></tr>
+<tr><td>Lights-off</td><td>On target, or move the last shot to 4:30 PM tomorrow.</td></tr></table>
+<h2>When you did not run what the app said</h2>
+<p>Tap <b>Deviation</b>. Pick the zone, the type (skipped shot, moved start, changed count, other), what was planned, what you ran, and why. The reason is required. Save.</p>
+<h2>Harvest</h2>
+<p>Tap <b>Harvest</b>. Pick zone and light, type wet and dry grams, save. The strain fills itself from the Sheet.</p>
+<h2>Today</h2>
+<p>Tap <b>Today</b> for one card per zone: the flower day, the last 9:25 decision, and everything logged so far.</p>
+<h2>Where the data lives</h2>
+<p>Google Sheet <b>Crop Steering Master</b>, tabs that start with <code>CS_</code>. <code>CS_Settings</code> holds every number the rules use. <code>CS_Bags</code> holds each bag's field capacity and strain. Set the six flip dates and the 24 strain names there before day 1. Do not edit the other tabs.</p>
+</body></html>

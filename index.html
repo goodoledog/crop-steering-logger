@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b5e20">
+<title>Crop Steering Logger</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--g:#1b5e20;--bg:#f4f6f4;--card:#fff;--ink:#111;--mut:#666;--warn:#b26a00;--ok:#1b5e20;--err:#b00020}
+*{box-sizing:border-box}body{margin:0;font:17px/1.35 -apple-system,system-ui,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:80px}
+header{background:var(--g);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:2}
+header b{font-size:18px}header small{opacity:.85}
+main{padding:12px;max-width:560px;margin:0 auto}
+h2{font-size:16px;color:var(--mut);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.grid{display:grid;gap:10px}.g6{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+button{font:inherit;border:0;border-radius:12px;padding:18px 10px;background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12);font-size:20px;font-weight:600;min-height:64px}
+button small{display:block;font-weight:400;font-size:13px;color:var(--mut);margin-top:3px}
+button.sel{background:var(--g);color:#fff}button.sel small{color:#dfe}
+button.primary{background:var(--g);color:#fff;width:100%;font-size:22px;padding:20px}
+button.ghost{background:transparent;box-shadow:none;color:var(--g);font-size:16px;min-height:0;padding:10px}
+input,select,textarea{font:inherit;width:100%;padding:16px;border:1px solid #ccc;border-radius:12px;background:#fff;font-size:22px}
+input.num{font-size:34px;text-align:center;font-weight:700}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 6px}
+.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.12);margin:10px 0}
+.card.ok{border-left:8px solid var(--ok)}.card.warn{border-left:8px solid var(--warn)}.card.err{border-left:8px solid var(--err);color:var(--err)}
+.big{font-size:26px;font-weight:800;margin-bottom:8px}.line{margin:6px 0}.rule{color:var(--mut);font-size:14px;margin-top:10px;border-top:1px solid #eee;padding-top:8px}
+.crumb{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}.crumb span{background:#dfe8df;border-radius:20px;padding:6px 12px;font-size:15px;font-weight:600}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border-radius:0;box-shadow:none;background:#fff;font-size:14px;padding:12px 4px;min-height:56px;color:var(--mut)}nav button.sel{color:var(--g);background:#eef4ee}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.hide{display:none}.spin{opacity:.5;pointer-events:none}
+</style>
+</head>
+<body>
+<header><div><b>Crop Steering Logger</b><br><small id="hdr">loading settings</small></div><div id="who-chip" style="font-size:14px"></div></header>
+<main>
+<section id="v-log">
+  <div class="crumb" id="crumb"></div>
+  <div id="s-zone"><h2>1. Zone</h2><div class="grid g6" id="zones"></div></div>
+  <div id="s-bag" class="hide"><h2>2. Bag</h2><div class="grid g4" id="bags"></div></div>
+  <div id="s-cp" class="hide"><h2>3. Checkpoint</h2><div class="grid g4" id="cps"></div></div>
+  <div id="s-w" class="hide">
+    <h2>4. Weight</h2>
+    <input class="num" id="weight" type="number" inputmode="decimal" placeholder="grams" step="1">
+    <div id="leach" class="hide">
+      <div class="row"><div><label>Leachate mL</label><input id="l_ml" type="number" inputmode="decimal"></div><div><label>Leachate EC</label><input id="l_ec" type="number" inputmode="decimal" step="0.1"></div><div><label>Leachate pH</label><input id="l_ph" type="number" inputmode="decimal" step="0.1"></div></div>
+    </div>
+    <label>Note (optional)</label><input id="note" type="text">
+    <div style="height:12px"></div>
+    <button class="primary" id="save">Save and get decision</button>
+  </div>
+  <div id="result"></div>
+  <div id="after" class="hide grid g2" style="margin-top:12px"><button id="nextbag">Next bag</button><button id="newzone">New zone</button></div>
+</section>
+
+<section id="v-dev" class="hide">
+  <h2>Deviation</h2>
+  <label>Zone</label><div class="grid g6" id="d-zones"></div>
+  <label>Date</label><input id="d-date" type="date">
+  <label>Type</label><div class="grid g2" id="d-types"></div>
+  <div class="row"><div><label>Planned</label><input id="d-plan" type="text" placeholder="e.g. 6 shots"></div><div><label>Actual</label><input id="d-act" type="text" placeholder="e.g. 5 shots"></div></div>
+  <label>Reason (required)</label><textarea id="d-reason" rows="3"></textarea>
+  <div style="height:12px"></div><button class="primary" id="d-save">Save deviation</button>
+  <div id="d-result"></div>
+</section>
+
+<section id="v-har" class="hide">
+  <h2>Harvest weight</h2>
+  <label>Zone</label><div class="grid g6" id="h-zones"></div>
+  <label>Light</label><div class="grid g4" id="h-lights"></div>
+  <label>Date</label><input id="h-date" type="date">
+  <div class="row"><div><label>Wet g</label><input id="h-wet" type="number" inputmode="decimal"></div><div><label>Dry g</label><input id="h-dry" type="number" inputmode="decimal"></div></div>
+  <label>Note</label><input id="h-note" type="text">
+  <div style="height:12px"></div><button class="primary" id="h-save">Save harvest</button>
+  <div id="h-result"></div>
+</section>
+
+<section id="v-today" class="hide">
+  <h2>Today <span id="t-date"></span></h2>
+  <button class="ghost" id="t-refresh">Refresh</button>
+  <div id="t-cards"></div>
+</section>
+
+<section id="v-me" class="hide">
+  <h2>Your name</h2><p style="color:var(--mut);font-size:15px">Goes on every row you save. Kept only while this page is open.</p>
+  <input id="who" type="text" placeholder="name or initials">
+  <div style="height:12px"></div><button class="primary" id="who-save">Save name</button>
+  <p style="margin-top:24px"><a href="howto.html">How to use this app (one page)</a></p>
+  <p style="color:var(--mut);font-size:14px">Field capacity, thresholds and flip dates live in the CS_Settings and CS_Bags tabs of the Sheet.</p>
+</section>
+</main>
+<nav>
+  <button data-v="log" class="sel">Log</button><button data-v="dev">Deviation</button><button data-v="har">Harvest</button><button data-v="today">Today</button><button data-v="me">Me</button>
+</nav>
+<script>
+const API='https://script.google.com/macros/s/AKfycbw3WQwaW_Frk-D8AqHpSmS1LbQSng67vd0qJpUPFraZ0ESINPCQZFOPOXztIq8ppXg/exec';
+const ZONES=['Z1','Z2','Z3','Z4','Z5','Z6'], LIGHTS=['L1','L2','L3','L4'];
+const CPS=[['am','9:25 AM','pre-P1'],['post','11:15 AM','after P1, sets FC'],['pm','4:15 PM','P2 yes/no'],['off','Lights-off','6:45 PM']];
+const DTYPES=['skipped shot','moved start','changed count','other'];
+let S=null, sel={zone:null,bag:null,cp:null}, who='', dsel={zone:null,type:null}, hsel={zone:null,light:null};
+const $=id=>document.getElementById(id);
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function btns(el,items,cur,on,sub){el.innerHTML='';items.forEach(it=>{const [v,l,s]=Array.isArray(it)?it:[it,it,sub?sub(it):''];const b=document.createElement('button');b.innerHTML=l+(s?'<small>'+s+'</small>':'');if(cur===v)b.classList.add('sel');b.onclick=()=>on(v);el.appendChild(b)})}
+function strain(bag){const b=S&&S.bags.find(x=>x.bag===bag);return b&&b.strain?b.strain:''}
+function card(html,level){return '<div class="card '+(level||'ok')+'">'+html+'</div>'}
+async function load(){try{const r=await fetch(API);const j=await r.json();if(!j.ok)throw new Error(j.error);S=j.state;$('hdr').textContent=S.date+'  '+ZONES.map(z=>z+' d'+(S.flowerDays[z]==null?'?':S.flowerDays[z])).join(' ');renderLog();renderToday()}catch(e){$('hdr').textContent='Cannot reach the Sheet: '+e.message}}
+function renderLog(){
+  $('crumb').innerHTML=[sel.zone,sel.bag&&(sel.bag+(strain(sel.bag)?' '+strain(sel.bag):'')),sel.cp&&CPS.find(c=>c[0]===sel.cp)[1]].filter(Boolean).map(x=>'<span>'+x+'</span>').join('');
+  btns($('zones'),ZONES,sel.zone,v=>{sel.zone=v;sel.bag=null;renderLog()},z=>'day '+(S&&S.flowerDays[z]!=null?S.flowerDays[z]:'?'));
+  $('s-bag').classList.toggle('hide',!sel.zone);
+  if(sel.zone)btns($('bags'),LIGHTS.map(l=>[sel.zone+'-'+l,l,strain(sel.zone+'-'+l)||'no strain set']),sel.bag,v=>{sel.bag=v;renderLog();if(sel.cp)$('weight').focus()});
+  $('s-cp').classList.toggle('hide',!sel.bag);
+  btns($('cps'),CPS,sel.cp,v=>{sel.cp=v;renderLog();$('weight').focus()});
+  $('s-w').classList.toggle('hide',!(sel.bag&&sel.cp));
+  $('leach').classList.toggle('hide',sel.cp!=='post');
+}
+$('save').onclick=async()=>{
+  const w=$('weight').value;if(!w){$('result').innerHTML=card('Type the weight in grams.','err');return}
+  const p={action:'entry',bag:sel.bag,checkpoint:sel.cp,weight:w,who,note:$('note').value,leachate_ml:$('l_ml').value,leachate_ec:$('l_ec').value,leachate_ph:$('l_ph').value};
+  $('save').classList.add('spin');$('save').textContent='Saving to Sheet';
+  try{const j=await post(p);
+    $('result').innerHTML=card('<div class="big">'+j.output[0]+'</div>'+j.output.slice(1).map(l=>'<div class="line">'+l+'</div>').join('')+'<div class="rule">'+j.bag+' day '+(j.day==null?'? (set flip date)':j.day)+' '+j.phase+'. FC used '+j.fc+' g. Saved to CS_Entries.<br>'+j.rule+'</div>',j.level);
+    $('after').classList.remove('hide');$('weight').value='';$('note').value='';$('l_ml').value='';$('l_ec').value='';$('l_ph').value='';
+    const b=S.bags.find(x=>x.bag===j.bag);if(b&&j.output[0].startsWith('FC re-baselined'))b.fc_g=Number(j.output[0].match(/to ([\d,]+) g/)[1].replace(/,/g,''));
+  }catch(e){$('result').innerHTML=card('NOT SAVED. '+e.message+'<br>Your numbers are still in the boxes. Check signal and tap Save again.','err')}
+  finally{$('save').classList.remove('spin');$('save').textContent='Save and get decision'}
+};
+$('nextbag').onclick=()=>{const i=LIGHTS.indexOf(sel.bag.split('-')[1]);sel.bag=i<3?sel.zone+'-'+LIGHTS[i+1]:null;$('result').innerHTML='';$('after').classList.add('hide');renderLog();if(sel.bag)$('weight').focus()};
+$('newzone').onclick=()=>{sel.zone=null;sel.bag=null;$('result').innerHTML='';$('after').classList.add('hide');renderLog();window.scrollTo(0,0)};
+async function post(p){const r=await fetch(API,{method:'POST',body:JSON.stringify(p)});const j=await r.json();if(!j.ok)throw new Error(j.error||'Sheet refused the entry');return j}
+// Deviation
+$('d-date').value=todayStr();
+function renderDev(){btns($('d-zones'),ZONES,dsel.zone,v=>{dsel.zone=v;renderDev()});btns($('d-types'),DTYPES,dsel.type,v=>{dsel.type=v;renderDev()})}
+$('d-save').onclick=async()=>{const p={action:'deviation',zone:dsel.zone,date:$('d-date').value,type:dsel.type,planned:$('d-plan').value,actual:$('d-act').value,reason:$('d-reason').value,who};
+  try{const j=await post(p);$('d-result').innerHTML=card(j.output[0]+'. Saved to CS_Deviations.','ok');$('d-plan').value='';$('d-act').value='';$('d-reason').value='';dsel.type=null;renderDev()}catch(e){$('d-result').innerHTML=card('NOT SAVED. '+e.message,'err')}};
+// Harvest
+$('h-date').value=todayStr();
+function renderHar(){btns($('h-zones'),ZONES,hsel.zone,v=>{hsel.zone=v;renderHar()});btns($('h-lights'),LIGHTS,hsel.light,v=>{hsel.light=v;renderHar()},l=>hsel.zone?strain(hsel.zone+'-'+l):'')}
+$('h-save').onclick=async()=>{const p={action:'harvest',zone:hsel.zone,light:hsel.light,date:$('h-date').value,wet_g:$('h-wet').value,dry_g:$('h-dry').value,note:$('h-note').value};
+  try{const j=await post(p);$('h-result').innerHTML=card(j.output[0]+'. Saved to CS_Harvest.','ok');$('h-wet').value='';$('h-dry').value='';$('h-note').value=''}catch(e){$('h-result').innerHTML=card('NOT SAVED. '+e.message,'err')}};
+// Today
+function renderToday(){if(!S)return;$('t-date').textContent=S.date;$('t-cards').innerHTML=ZONES.map(z=>{const e=S.today.filter(x=>x.zone===z);const am=e.filter(x=>x.checkpoint==='9:25 AM').pop();
+  return card('<div class="big">'+z+' <small style="font-weight:400;color:#666">day '+(S.flowerDays[z]==null?'?':S.flowerDays[z])+'</small></div>'+(am?'<div class="line">'+String(am.output).split('\n').slice(0,3).join('<br>')+'</div>':'<div class="line" style="color:#666">No 9:25 weight yet</div>')+
+    '<div class="rule">'+(e.length?e.map(x=>x.timestamp+' '+x.bag+' '+x.checkpoint+' '+x.weight_g+' g ('+x.deficit_g+' g under)').join('<br>'):'nothing logged today')+'</div>','ok')}).join('')}
+$('t-refresh').onclick=load;
+// Nav + name
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');['log','dev','har','today','me'].forEach(v=>$('v-'+v).classList.toggle('hide',v!==b.dataset.v));if(b.dataset.v==='dev')renderDev();if(b.dataset.v==='har')renderHar();if(b.dataset.v==='today')load();window.scrollTo(0,0)});
+$('who-save').onclick=()=>{who=$('who').value.trim();$('who-chip').textContent=who;document.querySelector('nav button[data-v=log]').click()};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+load();renderLog();
+</script>
+</body>
+</html>
