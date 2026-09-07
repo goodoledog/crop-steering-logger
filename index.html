@@ -88,8 +88,13 @@ nav button{flex:1;border-radius:0;box-shadow:none;background:#fff;font-size:14px
   <h2>Your name</h2><p style="color:var(--mut);font-size:15px">Goes on every row you save. Kept only while this page is open.</p>
   <input id="who" type="text" placeholder="name or initials">
   <div style="height:12px"></div><button class="primary" id="who-save">Save name</button>
+  <h2 style="margin-top:28px">Room setup</h2>
+  <p style="color:var(--mut);font-size:15px">Flip date is day 1 of flower. Strains are L1 to L4 under each zone. Save writes to the Sheet.</p>
+  <div id="setup"></div>
+  <div style="height:12px"></div><button class="primary" id="setup-save">Save room setup</button>
+  <div id="setup-result"></div>
   <p style="margin-top:24px"><a href="howto.html">How to use this app (one page)</a></p>
-  <p style="color:var(--mut);font-size:14px">Field capacity, thresholds and flip dates live in the CS_Settings and CS_Bags tabs of the Sheet.</p>
+  <p style="color:var(--mut);font-size:14px">Field capacity and thresholds live in the CS_Settings tab of the Sheet.</p>
 </section>
 </main>
 <nav>
@@ -147,7 +152,13 @@ function renderToday(){if(!S)return;$('t-date').textContent=S.date;$('t-cards').
     '<div class="rule">'+(e.length?e.map(x=>x.timestamp+' '+x.bag+' '+x.checkpoint+' '+x.weight_g+' g, deficit '+x.deficit_g+' g').join('<br>'):'nothing logged today')+'</div>','ok')}).join('')}
 $('t-refresh').onclick=load;
 // Nav + name
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');['log','dev','har','today','me'].forEach(v=>$('v-'+v).classList.toggle('hide',v!==b.dataset.v));if(b.dataset.v==='dev')renderDev();if(b.dataset.v==='har')renderHar();if(b.dataset.v==='today')load();window.scrollTo(0,0)});
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');['log','dev','har','today','me'].forEach(v=>$('v-'+v).classList.toggle('hide',v!==b.dataset.v));if(b.dataset.v==='dev')renderDev();if(b.dataset.v==='har')renderHar();if(b.dataset.v==='today')load();if(b.dataset.v==='me')renderSetup();window.scrollTo(0,0)});
+function renderSetup(){if(!S)return;$('setup').innerHTML=ZONES.map(z=>'<div class="card"><div class="big">'+z+'</div><label>Flip date</label><input type="date" id="flip-'+z+'" value="'+(S.settings['flip_'+z]||'')+'">'+LIGHTS.map(l=>'<label>'+l+' strain</label><input type="text" id="st-'+z+'-'+l+'" value="'+(strain(z+'-'+l)||'').replace(/"/g,'&quot;')+'" placeholder="strain name">').join('')+'</div>').join('')}
+$('setup-save').onclick=async()=>{const values={},strains={};ZONES.forEach(z=>{values['flip_'+z]=$('flip-'+z).value;LIGHTS.forEach(l=>strains[z+'-'+l]=$('st-'+z+'-'+l).value.trim())});
+  $('setup-save').classList.add('spin');$('setup-save').textContent='Saving to Sheet';
+  try{const a=await post({action:'set_settings',values});const b=await post({action:'set_strains',strains});$('setup-result').innerHTML=card(a.output[0]+', '+b.output[0]+'. Saved to CS_Settings and CS_Bags.','ok');await load();renderSetup()}
+  catch(e){$('setup-result').innerHTML=card('NOT SAVED. '+e.message,'err')}
+  finally{$('setup-save').classList.remove('spin');$('setup-save').textContent='Save room setup'}};
 $('who-save').onclick=()=>{who=$('who').value.trim();$('who-chip').textContent=who;document.querySelector('nav button[data-v=log]').click()};
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 load();renderLog();
