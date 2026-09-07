@@ -156,7 +156,7 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.query
 function renderSetup(){if(!S)return;$('setup').innerHTML=ZONES.map(z=>'<div class="card"><div class="big">'+z+'</div><label>Flip date</label><input type="date" id="flip-'+z+'" value="'+(S.settings['flip_'+z]||'')+'">'+LIGHTS.map(l=>'<label>'+l+' strain</label><input type="text" id="st-'+z+'-'+l+'" value="'+(strain(z+'-'+l)||'').replace(/"/g,'&quot;')+'" placeholder="strain name">').join('')+'</div>').join('')}
 $('setup-save').onclick=async()=>{const values={},strains={};ZONES.forEach(z=>{values['flip_'+z]=$('flip-'+z).value;LIGHTS.forEach(l=>strains[z+'-'+l]=$('st-'+z+'-'+l).value.trim())});
   $('setup-save').classList.add('spin');$('setup-save').textContent='Saving to Sheet';
-  try{const a=await post({action:'set_settings',values});const b=await post({action:'set_strains',strains});$('setup-result').innerHTML=card(a.output[0]+', '+b.output[0]+'. Saved to CS_Settings and CS_Bags.','ok');await load();renderSetup()}
+  try{const a=await post({action:'set_settings',values});const b=await post({action:'set_strains',strains});$('setup-result').innerHTML=card(a.output[0]+', '+b.output[0]+'. Saved to CS_Settings and CS_Bags.','ok');Object.assign(S.settings,values);S.bags.forEach(x=>{if(strains.hasOwnProperty(x.bag))x.strain=strains[x.bag]});renderSetup();setTimeout(load,5000)}
   catch(e){$('setup-result').innerHTML=card('NOT SAVED. '+e.message,'err')}
   finally{$('setup-save').classList.remove('spin');$('setup-save').textContent='Save room setup'}};
 $('who-save').onclick=()=>{who=$('who').value.trim();$('who-chip').textContent=who;document.querySelector('nav button[data-v=log]').click()};
