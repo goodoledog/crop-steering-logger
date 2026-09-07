@@ -111,7 +111,7 @@ const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 function btns(el,items,cur,on,sub){el.innerHTML='';items.forEach(it=>{const [v,l,s]=Array.isArray(it)?it:[it,it,sub?sub(it):''];const b=document.createElement('button');b.innerHTML=l+(s?'<small>'+s+'</small>':'');if(cur===v)b.classList.add('sel');b.onclick=()=>on(v);el.appendChild(b)})}
 function strain(bag){const b=S&&S.bags.find(x=>x.bag===bag);return b&&b.strain?b.strain:''}
 function card(html,level){return '<div class="card '+(level||'ok')+'">'+html+'</div>'}
-async function load(){try{const r=await fetch(API);const j=await r.json();if(!j.ok)throw new Error(j.error);S=j.state;$('hdr').textContent=S.date+'  '+ZONES.map(z=>z+' d'+(S.flowerDays[z]==null?'?':S.flowerDays[z])).join(' ');renderLog();renderToday()}catch(e){$('hdr').textContent='Cannot reach the Sheet: '+e.message}}
+async function load(){try{const r=await fetch(API+'?t='+Date.now(),{cache:'no-store'});const j=await r.json();if(!j.ok)throw new Error(j.error);S=j.state;$('hdr').textContent=S.date+'  '+ZONES.map(z=>z+' d'+(S.flowerDays[z]==null?'?':S.flowerDays[z])).join(' ');renderLog();renderToday()}catch(e){$('hdr').textContent='Cannot reach the Sheet: '+e.message}}
 function renderLog(){
   $('crumb').innerHTML=[sel.zone,sel.bag&&(sel.bag+(strain(sel.bag)?' '+strain(sel.bag):'')),sel.cp&&CPS.find(c=>c[0]===sel.cp)[1]].filter(Boolean).map(x=>'<span>'+x+'</span>').join('');
   btns($('zones'),ZONES,sel.zone,v=>{sel.zone=v;sel.bag=null;renderLog()},z=>'day '+(S&&S.flowerDays[z]!=null?S.flowerDays[z]:'?'));
