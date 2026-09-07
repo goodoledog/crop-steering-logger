@@ -19,4 +19,5 @@ with the rule that made it, and writes the row to the Google Sheet.
 - `setup()` is safe to re-run. `deleteTestRows()` removes rows whose note or reason contains "delete me".
 
 ## Before day 1 of a crop
-In the Sheet: fill `flip_Z1` to `flip_Z6` in CS_Settings (yyyy-mm-dd) and the 24 strain names in CS_Bags.
+In the app: Me, Room setup. Flip date per zone and the 24 strain names. Saves to CS_Settings and CS_Bags.
+Crop of 2026-09: all six zones flipped 2026-09-02 (his word, 2026-09-07).
